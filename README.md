@@ -9,4 +9,4 @@ The second change was adding the weight of the edge to the cost Hamiltonian.
 
 These two changes were easily implemented using the existing code implementation. 
 
-I tested the new method and it seemed to work smoothly. 
+I tested the new method and it seemed to work smoothly. In order to improve the testing I made the graph structure randomized (whilst setting the number of edges and nodes).

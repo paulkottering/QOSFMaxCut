@@ -7,7 +7,6 @@ import random
 from scipy.optimize import minimize
 
 
-### NEW GRAPH METHOD
 class Graph:
     def __init__(self, edges_set):
         self.edges_set = edges_set
@@ -23,25 +22,6 @@ class Edge:
         self.start_node = start_node
         self.end_node = end_node
         self.weight = np.random.randint(0,100,1)
-
-set_edges = [Edge(1, 2), Edge(2, 3), Edge(3, 0), Edge(2, 0), Edge(1, 3), Edge(0, 4), Edge(1, 4), Edge(2, 4), Edge(3, 4), Edge(4, 5), Edge(5, 0), Edge(2, 6), Edge(6, 3)]
-
-G = nx.Graph()
-
-for z in set_edges:
-    G.add_edge(str(z.start_node), str(z.end_node),weight=z.weight)
-nx.draw(G)
-plt.savefig('graph.png')
-plt.clf()
-
-
-# Defines the list of qubits
-
-num = 7
-depth = 4
-rep = 1000
-qubits = [cirq.GridQubit(0, i) for i in range(0, num)]
-
 
 # Defines the initialization
 
@@ -100,43 +80,80 @@ def cost_function(params):
 
     return total_cost
 
-# Defines the optimization method
-init =[float(random.randint(-314, 314))/float(100) for i in range(0, 2*depth)]
-out = minimize(cost_function, x0=init, method="COBYLA", options={'maxiter':100})
-print(out)
 
-optimal_params = out['x']
-f = create_circuit(optimal_params)
+def main():
 
-# Creates visualization of the optimal state
+    global set_edges
+    global depth
+    global rep
+    global qubits
+    global num
+    num = 10
 
-nums = []
-freq = []
 
-for i in range(0, len(f)):
-    number = 0
-    for j in range(0, len(f[i])):
-        number += 2**(len(f[i])-j-1)*f[i][j]
-    if (number in nums):
-        freq[nums.index(number)] = freq[nums.index(number)] + 1
-    else:
-        nums.append(number)
-        freq.append(1)
+    #Implement randomized edge structure
+    numedge = 15
+    set_edges = []
+    edgearray = np.random.randint(0, num, [numedge * 2 + 1])
 
-freq = [s/sum(freq) for s in freq]
+    for i in range(numedge):
+        if edgearray[2*i] != edgearray[2*i+1]:
+            set_edges.append(Edge(edgearray[2*i], edgearray[2*i+1]))
 
-print(nums)
-print(freq)
+    G = nx.Graph()
 
-x = range(0, 2**num)
-y = []
-for i in range(0, len(x)):
-    if (i in nums):
-        y.append(freq[nums.index(i)])
-    else:
-        y.append(0)
+    for z in set_edges:
+        G.add_edge(str(z.start_node), str(z.end_node), weight=z.weight)
+    nx.draw(G)
+    plt.savefig('graph.png')
+    plt.clf()
 
-plt.bar(x, y)
-plt.savefig('Bar.png')
+    # Defines the list of qubits
+
+    depth = 4
+    rep = 1000
+    qubits = [cirq.GridQubit(0, i) for i in range(0, num)]
+
+    # Defines the optimization method
+    init =[float(random.randint(-314, 314))/float(100) for i in range(0, 2*depth)]
+    out = minimize(cost_function, x0=init, method="COBYLA", options={'maxiter':100})
+    print('out',out)
+
+    optimal_params = out['x']
+    f = create_circuit(optimal_params)
+
+    # Creates visualization of the optimal state
+
+    nums = []
+    freq = []
+
+    for i in range(0, len(f)):
+        number = 0
+        for j in range(0, len(f[i])):
+            number += 2**(len(f[i])-j-1)*f[i][j]
+        if (number in nums):
+            freq[nums.index(number)] = freq[nums.index(number)] + 1
+        else:
+            nums.append(number)
+            freq.append(1)
+
+    freq = [s/sum(freq) for s in freq]
+
+    print(nums)
+    print(freq)
+
+    x = range(0, 2**num)
+    y = []
+    for i in range(0, len(x)):
+        if (i in nums):
+            y.append(freq[nums.index(i)])
+        else:
+            y.append(0)
+
+    plt.bar(x, y)
+    plt.savefig('Bar.png')
+
+if __name__ == "__main__":
+    main()
 
 
